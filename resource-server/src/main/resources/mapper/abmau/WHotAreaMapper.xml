@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.cms.server.infrastructure.adcontentservice.hotArea.mapper.WHotAreaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.idanchuang.cms.server.infrastructure.adcontentservice.hotArea.entity.WHotArea">
+        <id column="id" property="id" />
+        <result column="platform" property="platform" />
+        <result column="title" property="title" />
+        <result column="image" property="image" />
+        <result column="jump_type" property="jumpType" />
+        <result column="jump_url" property="jumpUrl" />
+        <result column="jump_wx" property="jumpWx" />
+        <result column="goods_id" property="goodsId" />
+        <result column="display_position" property="displayPosition" />
+        <result column="display_line" property="displayLine" />
+        <result column="line_position" property="linePosition" />
+        <result column="hot_type" property="hotType" />
+        <result column="font_color" property="fontColor" />
+        <result column="font_size" property="fontSize" />
+        <result column="activity_start_at" property="activityStartAt" />
+        <result column="activity_end_at" property="activityEndAt" />
+        <result column="dest_level" property="destLevel" />
+        <result column="start_at" property="startAt" />
+        <result column="end_at" property="endAt" />
+        <result column="display_order" property="displayOrder" />
+        <result column="share_title" property="shareTitle" />
+        <result column="share_image" property="shareImage" />
+        <result column="share_url" property="shareUrl" />
+        <result column="share_desc" property="shareDesc" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted_at" property="deletedAt" />
+    </resultMap>
+
+    <select id="pageQueryHotArea" resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM
+            w_hot_area
+        <where>
+            <if test="request.title != null and request.title != ''">
+              AND title LIKE CONCAT('%', #{request.title}, '%')
+            </if>
+            <if test="request.platform != null">
+              AND platform = #{request.platform}
+            </if>
+            <if test="request.displayPosition != null and request.displayPosition != ''">
+              AND display_position = #{request.displayPosition}
+            </if>
+            <if test="request.displayLine != null">
+              AND display_line = #{request.displayLine}
+            </if>
+            <if test="request.linePosition != null">
+              AND line_position = #{request.linePosition}
+            </if>
+            <if test="request.destLevel != null and request.destLevel != ''">
+              AND dest_level LIKE CONCAT('%', #{request.destLevel}, '%')
+            </if>
+            <if test="request.hotType != null">
+              AND hot_type = #{request.hotType}
+            </if>
+            <if test="request.status != null">
+              <if test="request.status == 0">
+                  <![CDATA[
+                    AND (start_at > NOW() OR end_at < NOW())
+                  ]]>
+              </if>
+              <if test="request.status == 1">
+                  <![CDATA[
+                    AND start_at <= NOW() AND end_at >= NOW()
+                  ]]>
+              </if>
+            </if>
+            AND deleted_at IS NULL
+        </where>
+        ORDER BY
+        created_at DESC
+    </select>
+
+    <select id="queryLineCount" resultType="java.lang.Integer">
+    select count(1)
+    from (select 1 from w_hot_area where platform =#{platform} and display_position =#{displayPosition} and end_at >= now() GROUP BY display_line) a
+    </select>
+
+</mapper>

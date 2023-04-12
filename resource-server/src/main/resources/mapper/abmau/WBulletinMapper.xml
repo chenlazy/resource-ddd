@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.cms.server.infrastructure.adcontentservice.bulletin.mapper.WBulletinMapper">
+
+    <resultMap type="com.idanchuang.cms.server.infrastructure.adcontentservice.bulletin.entity.WBulletin" id="WBulletinMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="platformType" column="platform_type" jdbcType="INTEGER"/>
+        <result property="position" column="position" jdbcType="INTEGER"/>
+        <result property="targetLevels" column="target_levels" jdbcType="VARCHAR"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="isJump" column="is_jump" jdbcType="INTEGER"/>
+        <result property="jumpType" column="jump_type" jdbcType="INTEGER"/>
+        <result property="textTitle" column="text_title" jdbcType="VARCHAR"/>
+        <result property="textContent" column="text_content" jdbcType="VARCHAR"/>
+        <result property="jumpUrl" column="jump_url" jdbcType="VARCHAR"/>
+        <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+        <result property="updatedAt" column="updated_at" jdbcType="TIMESTAMP"/>
+        <result property="deletedAt" column="deleted_at" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectListBulletin"
+            resultType="com.idanchuang.cms.server.interfaces.adcontentservice.vo.BulletinPageDTO"
+            parameterType="com.idanchuang.cms.server.interfaces.adcontentservice.dto.BulletinQueryRequest">
+        SELECT
+        id,
+        platform_type as type,
+        (case platform_type
+        when 1 then '单创'
+        when 2 then 'ABM'
+        else '' end ) as typeName,
+        position,
+        (case position
+        when 1 then '单创:首页公告栏'
+        when 2 then '单创:购物车公告栏'
+        when 3 then 'ABM:工作台公告栏'
+        else '' end ) as positionName,
+        target_levels as targetLevels,
+        (case
+        when (start_time <![CDATA[ <= ]]> now()	and now() <![CDATA[ <= ]]>end_time) then 1
+        else 0 end ) as state,
+        title as text,
+        start_time as startAt,
+        end_time as endAt
+        FROM w_bulletin w
+        <trim prefix="WHERE" prefixOverrides="and">
+            <if test="bulletinQueryRequest.platformType!=null">
+                and w.platform_type=#{bulletinQueryRequest.platformType}
+            </if>
+            <if test="bulletinQueryRequest.position!=null">
+                and w.position=#{bulletinQueryRequest.position}
+            </if>
+            <if test="bulletinQueryRequest.level!=null">
+                and w.target_levels regexp #{bulletinQueryRequest.level}
+            </if>
+            <if test="bulletinQueryRequest.state != null and bulletinQueryRequest.state==0 ">
+                and (w.start_time <![CDATA[ > ]]>  now()
+                or now() <![CDATA[ > ]]> w.end_time)
+            </if>
+            <if test="bulletinQueryRequest.state !=null  and bulletinQueryRequest.state==1 ">
+                and w.start_time <![CDATA[ <= ]]>  now()
+                and now() <![CDATA[ <= ]]> w.end_time
+            </if>
+            and w.deleted_at is null
+        </trim>
+        ORDER BY w.id DESC
+    </select>
+
+
+
+    <select id="getListByPlatFormPosition"
+            resultType="com.idanchuang.cms.api.adcontentservice.response.BulletinPortalDetailDTO"
+            parameterType="java.util.Map">
+        SELECT
+        id,
+        platform_type,
+        (case platform_type
+        when 1 then '单创'
+        when 2 then 'ABM'
+        else '' end ) as typeName,
+        position,
+        (case position
+        when 1 then '单创:首页公告栏'
+        when 2 then '单创:购物车公告栏'
+        when 3 then 'ABM:工作台公告栏'
+        else '' end ) as positionName,
+        target_levels ,
+        title ,
+        start_time ,
+        end_time,
+        is_jump,
+        jump_type,
+        text_title,
+        text_content,
+        jump_url
+        FROM w_bulletin w
+        <trim prefix="WHERE" prefixOverrides="and">
+            <if test="map.platformType!=null">
+                and w.platform_type=#{map.platformType}
+            </if>
+            <if test="map.position!=null">
+                and w.position=#{map.position}
+            </if>
+            and w.deleted_at is  null
+        </trim>
+        ORDER BY w.id DESC
+    </select>
+
+    <select id="hadConflictData"
+            resultType="com.idanchuang.cms.api.adcontentservice.response.BulletinPortalDetailDTO"
+            parameterType="com.idanchuang.cms.server.interfaces.adcontentservice.dto.BulletinRequest">
+        SELECT
+        id,
+        platform_type,
+        target_levels ,
+        title ,
+        start_time ,
+        end_time,
+        is_jump,
+        jump_type,
+        text_title,
+        text_content,
+        jump_url
+        FROM w_bulletin w
+        <trim prefix="WHERE" prefixOverrides="and">
+            <if test="bulletinRequest.id!=null">
+                and w.id<![CDATA[!= ]]>#{bulletinRequest.id}
+            </if>
+            and w.platform_type=#{bulletinRequest.platformType}
+            and w.position=#{bulletinRequest.position}
+            and w.target_levels regexp #{bulletinRequest.level}
+            and
+            (
+            (start_time <![CDATA[ >= ]]> #{bulletinRequest.startTime} AND start_time <![CDATA[ <= ]]> #{bulletinRequest.endTime}) OR
+            (start_time <![CDATA[ <= ]]> #{bulletinRequest.startTime} AND end_time <![CDATA[ >= ]]> #{bulletinRequest.endTime}) OR
+            (end_time <![CDATA[ >= ]]> #{bulletinRequest.startTime} AND end_time<![CDATA[ <= ]]> #{bulletinRequest.endTime}))
+            and deleted_at is null
+        </trim>
+        limit 1
+    </select>
+
+</mapper>

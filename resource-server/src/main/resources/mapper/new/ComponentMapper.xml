@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.ComponentMapper">
+
+    <sql id="Base_Column_List">
+        id, page_code, page_id, container_id, component_type, model_type, biz_json, operator_id, create_time,
+        update_time, snap_root   </sql>
+
+
+    <select id="getComponentById"
+            resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ComponentDO">
+        select
+        <include refid="Base_Column_List"/>
+        from w_cms_container_component
+        <where>
+            id = #{componentId} and deleted = 0
+        </where>
+    </select>
+
+    <select id="getComponentByIds" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ComponentDO">
+        select
+        <include refid="Base_Column_List"/>
+        from w_cms_container_component
+        <where>
+            <foreach collection="componentIds" item="id" separator="," open="id in (" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getComponentList"
+            resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ComponentDO">
+        select
+        id, page_code, page_id, container_id, component_type, model_type, biz_json, operator_id, create_time,
+        update_time, snap_root
+        from w_cms_container_component
+        <where>
+            container_id = #{containerId} and deleted = 0 and snap_root = 0
+        </where>
+    </select>
+
+    <select id="queryComponentList"
+            resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ComponentDO">
+        select
+        id, page_code, page_id, container_id, component_type, model_type, biz_json, operator_id, create_time,
+        update_time, snap_root
+        from w_cms_container_component
+        <where>
+            <if test="list != null">
+                <foreach collection="list" item="containerId" open="container_id in (" separator="," close=")">
+                    #{containerId}
+                </foreach>
+            </if>
+            <if test="modelType != null">
+                and model_type = #{modelType}
+            </if>
+            and deleted = 0 and snap_root = 0
+        </where>
+    </select>
+
+    <insert id="batchInsertComponents" parameterType="java.util.List" keyProperty="id" keyColumn="id"
+            useGeneratedKeys="true">
+        insert into w_cms_container_component(id, page_code, page_id, container_id, component_type, model_type,
+        biz_json, operator_id, snap_root)
+        values
+        <foreach collection="list" item="r" separator=",">
+            (#{r.id,jdbcType=INTEGER}, #{r.pageCode}, #{r.pageId}, #{r.containerId}, #{r.componentType},
+            #{r.modelType}, #{r.bizJson}, #{r.operatorId}, #{r.snapRoot})
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateComponents" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update w_cms_container_component
+            <set>
+                <if test="item.containerId != null">container_id = #{item.containerId},</if>
+                <if test="item.pageCode != null">page_code = #{item.pageCode},</if>
+                <if test="item.pageId != null">page_id = #{item.pageId},</if>
+                <if test="item.componentType != null">component_type = #{item.componentType},</if>
+                <if test="item.modelType != null">model_type = #{item.modelType},</if>
+                <if test="item.bizJson != null">biz_json = #{item.bizJson},</if>
+                <if test="item.snapRoot != null">snap_root = #{item.snapRoot},</if>
+                operator_id = #{item.operatorId},
+                update_time = now()
+            </set>
+            where id = ${item.id}
+        </foreach>
+    </update>
+
+    <update id="batchRemoveComponents" parameterType="java.util.List">
+        update w_cms_container_component
+        set update_time = now(), deleted = 1
+        <where>
+            <foreach collection="componentIds" item="id" separator="," open="id in (" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="selectByActivityId"
+            resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ComponentDO">
+        select
+        <include refid="Base_Column_List"/>
+        from w_cms_container_component
+        <where>
+            <if test="containerIds != null">
+                <foreach collection="containerIds" item="containerId" separator="," open="container_id in (" close=")">
+                    #{containerId}
+                </foreach>
+            </if>
+            and deleted = 0 and snap_root = 0 and model_type= #{modelType}
+            and case when json_valid(biz_json) then biz_json->'$[0].activityId' = #{activityId} end
+        </where>
+    </select>
+
+</mapper>

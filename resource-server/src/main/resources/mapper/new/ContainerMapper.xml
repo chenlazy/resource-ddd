@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.ContainerMapper">
+
+    <sql id="Base_Column_List">
+    id,page_id,container_code,container_name,status,page_style,operator_id,create_time,update_time,deleted,extra
+    </sql>
+
+    <insert id="insertContainer" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        INSERT INTO `w_cms_page_container`
+        (page_id,container_code,container_name,status,page_style,operator_id,deleted,extra,snap_root)
+        VALUES
+        (#{pageId},#{containerCode},#{containerName},#{status},#{pageStyle},#{operatorId},0,#{extra},#{snapRoot});
+    </insert>
+
+    <select id="getContainerById" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            id = #{containerId} and deleted = 0
+        </where>
+    </select>
+
+    <select id="queryContainerList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            page_id = #{masterplateId}
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="querySnapContainerList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            page_id = #{masterplateId}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="queryBatchContainerList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            and page_id in
+            <foreach collection="masterplateIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="getContainerListByIds" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            id in
+            <foreach collection="containerIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <update id="updateContainer" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.ContainerDO">
+        UPDATE `w_cms_page_container`
+        <set>
+            <if test="pageId != null">page_id = #{pageId},</if>
+            <if test="containerCode != null">container_code = #{containerCode},</if>
+            <if test="containerName != null">container_name = #{containerName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="pageStyle != null">page_style = #{pageStyle},</if>
+            <if test="extra != null">extra = #{extra},</if>
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+</mapper>

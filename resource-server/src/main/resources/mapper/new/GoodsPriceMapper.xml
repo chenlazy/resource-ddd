@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.GoodsPriceMapper">
+
+
+    <insert id="batchStoreGoodsPirce" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into w_component_goods_price(component_id, component_goods_id, type, price_data, operator_id)
+        values
+        <foreach collection="list" item="r" separator=",">
+            (#{r.componentId}, #{r.componentGoodsId}, #{r.type}, #{r.priceData}, #{r.operatorId})
+        </foreach>
+    </insert>
+
+    <update id="batchRemoveGoodsPrice">
+        update w_component_goods_price
+        set update_time = now(), deleted = 1
+        <where>
+            <foreach collection="componentIds" item="componentId" separator="," open="component_id in (" close=")">
+                #{componentId}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="queryGoodsPriceList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.GoodsPriceDO">
+        select
+        id, component_id, component_goods_id, `type`, price_data, operator_id, create_time, update_time
+        from w_component_goods_price
+        <where>
+            <if test="goodsIdList != null">
+                <foreach collection="goodsIdList" item="goodsId" open="component_goods_id in (" separator="," close=")">
+                    #{goodsId}
+                </foreach>
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="componentId != null">
+                and component_id = #{componentId}
+            </if>
+            and deleted = 0
+        </where>
+    </select>
+
+</mapper>

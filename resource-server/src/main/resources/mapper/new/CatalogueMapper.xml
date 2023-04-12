@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.CatalogueMapper">
+
+    <sql id="Base_Column_List">
+    id,page_code,page_name,page_type,alias_title,operator_id,status,platform,create_time,update_time,deleted,tag_id,extra
+    </sql>
+
+    <insert id="insertCatalogue" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        INSERT INTO `w_cms_page_schema`
+        (page_code,page_name,page_type,alias_title,operator_id,status,platform,deleted,tag_id,extra)
+        VALUES
+        (#{pageCode},#{pageName},#{pageType},#{aliasTitle},#{operatorId},#{status},#{platform},#{deleted},#{tagId},#{extra});
+    </insert>
+
+    <update id="updateCatalogue" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        UPDATE `w_cms_page_schema`
+        <set>
+            <if test="pageCode != null">page_code = #{pageCode},</if>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="status != null">status = #{status}, </if>
+            <if test="tagId != null">tag_id = #{tagId},</if>
+            <if test="platform != null">platform = #{platform},</if>
+            <if test="aliasTitle != null">alias_title = #{aliasTitle},</if>
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <update id="removeCatalogue">
+        UPDATE `w_cms_page_schema`
+        <set>
+            deleted = 1,
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="getCatalogueById" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_schema`
+        <where>
+            id = #{catalogueId}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getCatalogueByIds" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_schema`
+        <where>
+            <foreach collection="catalogueIds" item="id" open="and id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getCatalogueByCode" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+
+        SELECT <include refid="Base_Column_List"/>
+        FROM `w_cms_page_schema`
+        <where>
+            page_code = #{pageCode}
+            and page_type = #{pageType}
+            and deleted = 0
+        </where>
+        limit 1
+    </select>
+
+    <select id="queryCatalogueList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        select <include refid="Base_Column_List"/>
+        from w_cms_page_schema
+        <where>
+            deleted = 0
+            and status = 1
+            <if test="id != null and id != 0">
+                and id = #{id}
+            </if>
+            <if test="pageTitle != null and pageTitle != ''">
+                and page_name like CONCAT('%', #{pageTitle}, '%')
+            </if>
+            <if test="clientPageId != null and clientPageId != 0">
+                and tag_id = #{clientPageId}
+            </if>
+            <if test="clientPageIdList != null">
+                <foreach collection="clientPageIdList" item="clientPageId" open="and tag_id in (" separator="," close=")">
+                    #{clientPageId}
+                </foreach>
+            </if>
+            <if test="aliasTitle != null and aliasTitle != ''">
+                and alias_title like CONCAT('%', #{aliasTitle}, '%')
+            </if>
+            <choose>
+                <when test="old == 0">
+                    <if test="platforms != null">
+                        <foreach collection="platforms" item="platform" open="and platform in (" separator="," close=")">
+                            #{platform}
+                        </foreach>
+                    </if>
+                </when>
+                <when test="old == 1">
+                    <choose>
+                        <when test="platforms != null">
+                            <foreach collection="platforms" item="platform" open="and platform in (" separator="," close=")">
+                                #{platform}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            and platform != -1
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="queryAllCatalogueList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        select <include refid="Base_Column_List"/>
+        from w_cms_page_schema
+        <where>
+            deleted = 0
+            and status = 1
+        </where>
+    </select>
+
+    <select id="queryAllCatalogueListByTagId" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        select <include refid="Base_Column_List"/>
+        from w_cms_page_schema
+        <where>
+            deleted = 0
+            and status = 1
+            and tag_id =#{tagId}
+        </where>
+    </select>
+
+    <select id="queryAllCatalogByTagIds" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.CatalogueDO">
+        select <include refid="Base_Column_List"/>
+        from w_cms_page_schema
+        <where>
+        deleted = 0
+        and status = 1
+            <if test="tagIds != null">
+                <foreach collection="tagIds" item="clientPageId" open="and tag_id in (" separator="," close=")">
+                    #{clientPageId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="queryTotalCatalogue" resultType="java.lang.Integer">
+
+        SELECT  count(*)
+        FROM `w_cms_page_schema`
+        <where>
+            and deleted = 0
+            and status = 1
+        </where>
+
+    </select>
+
+</mapper>

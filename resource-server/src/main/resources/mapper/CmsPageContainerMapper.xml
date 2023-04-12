@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.CmsPageContainerMapper">
+
+    <sql id="Base_Column_List">
+    id,page_id,container_code,container_name,status,page_style,operator_id,create_time,update_time,deleted,extra
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        INSERT INTO `w_cms_page_container`
+        (page_id,container_code,container_name,status,page_style,operator_id,deleted,extra)
+        VALUES
+        (#{pageId},#{containerCode},#{containerName},#{status},#{pageStyle},#{operatorId},#{deleted},#{extra});
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into w_cms_page_container(id,page_id,container_code,container_name,status,page_style,operator_id,extra)
+        values
+        <foreach collection ="containers" item="container" separator=",">
+            (#{container.id},#{container.pageId},#{container.containerCode},#{container.containerName},#{container.status},#{container.pageStyle},#{container.operatorId},#{container.extra})
+        </foreach>
+    </insert>
+
+    <select id="queryPageContainer" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            page_id = #{pageId}
+        </where>
+    </select>
+
+    <select id="queryPageContainerByPageIdList" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        where deleted = 0 and status = 2
+        and page_id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <update id="updateContainerPage" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        UPDATE `w_cms_page_container`
+        <set>
+            <if test="pageId != null">page_id = #{pageId},</if>
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            <if test="containerIds != null">
+                <foreach collection="containerIds" item="containerId" open="id in (" separator="," close=")">
+                    #{containerId}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <update id="updateContainerSnapRoot" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        UPDATE `w_cms_page_container`
+        <set>
+            <if test="snapRoot != null">snap_root = #{snapRoot}</if>
+        </set>
+        <where>
+                <foreach collection="ids" item="id" open="id in (" separator="," close=")">
+                    #{id}
+                </foreach>
+        </where>
+    </update>
+
+    <select id="queryPageContainersByPageIds" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        SELECT  id,page_id
+        FROM `w_cms_page_container`
+        where deleted = 0 and status = 2
+        and page_id in
+        <foreach collection="pageIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            id = #{id} and deleted = 0
+        </where>
+    </select>
+
+    <select id="getByIds"
+            resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageContainerDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_container`
+        <where>
+            id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach> and deleted = 0
+        </where>
+
+    </select>
+
+
+</mapper>

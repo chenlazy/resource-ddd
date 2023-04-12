@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.SequenceNumberMapper">
+
+    <sql id="Base_Column_List">
+    id,number_type,operator_id,create_time
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.SequenceNumberDO">
+    INSERT INTO `cms_sequence_number`(number_type)
+    VALUES(#{numberType})
+    </insert>
+
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.SequenceNumberDO">
+    INSERT INTO `cms_sequence_number`(number_type)
+    VALUES
+    <foreach collection ="lists" item="item" separator=",">
+        (#{item.numberType})
+    </foreach>
+
+    </insert>
+</mapper>

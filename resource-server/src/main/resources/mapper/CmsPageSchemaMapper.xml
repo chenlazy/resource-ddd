@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.CmsPageSchemaMapper">
+
+    <sql id="Base_Column_List">
+    id,page_code,page_name,page_type,put_versions,operator_id,status,create_time,update_time,deleted,tag_id,extra
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageSchemaDO">
+        INSERT INTO `w_cms_page_schema`
+        (page_code,page_name,page_type,put_versions,operator_id,status,deleted,tag_id,extra)
+        VALUES
+        (#{pageCode},#{pageName},#{pageType},#{putVersions},#{operatorId},#{status},#{deleted},#{tagId},#{extra});
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into
+        w_cms_page_schema(id,page_code,page_name,page_type,put_versions,operator_id,status,tag_id,extra)
+        values
+        <foreach collection ="schemas" item="schema" separator=",">
+            (#{schema.id},#{schema.pageCode},#{schema.pageName},#{schema.pageType},#{schema.putVersions},#{schema.operatorId},#{schema.status},#{schema.tagId},#{schema.extra})
+        </foreach>
+    </insert>
+
+    <select id="selectById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageSchemaDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page_schema`
+        <where>
+            id = #{pageSchemaId}
+            and deleted = 0
+        </where>
+    </select>
+
+    <update id="updateById" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageSchemaDO">
+        UPDATE `w_cms_page_schema`
+        <set>
+            <if test="pageCode != null">page_code = #{pageCode},</if>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="putVersions != null">put_versions = #{putVersions},</if>
+            <if test="status != null">status = #{status}, </if>
+            <if test="tagId != null">tag_id = #{tagId},</if>
+            <if test="platform != null">platform = #{platform},</if>
+            <if test="aliasTitle != null">alias_title = #{aliasTitle},</if>
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="queryByCondition" parameterType="com.idanchuang.cms.server.domain.model.cms.CmsCorePageList"
+            resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageSchemaListDO">
+        select
+        t.id,
+        t.page_code,
+        t.page_name,
+        t.operator_id,
+        t.status,
+        t.create_time,
+        t.update_time,
+        t.put_versions,
+        t.tag_id,
+        t.extra,
+        t.page_code
+        from w_cms_page_schema t
+        <where>
+            t.deleted = 0
+            and t.status = 1
+            <if test="condition.id != null and condition.id != 0">
+                and t.id = #{condition.id}
+            </if>
+            <if test="condition.pageTitle != null and condition.pageTitle != ''">
+                and t.page_name like CONCAT('%', #{condition.pageTitle}, '%')
+            </if>
+            <if test="condition.tagId != null and condition.tagId != 0">
+                and t.tag_id = #{condition.tagId}
+            </if>
+            <if test="condition.tagIdList != null">
+                <foreach collection="condition.tagIdList" item="tagId" open="and t.tag_id in (" separator="," close=")">
+                    #{tagId}
+                </foreach>
+            </if>
+            <if test="(condition.aliasTitle != null and condition.aliasTitle != '') or (condition.platform != null and condition.platform != '')">
+                and exists (
+                    select id from w_cms_page t2
+                    <where>
+                        t2.page_schema_id = t.id
+                        <if test="condition.aliasTitle != null and condition.aliasTitle != ''">
+                            and t2.alias_title like CONCAT('%', #{condition.aliasTitle}, '%')
+                        </if>
+                        <choose>
+                            <when test="condition.old == 0">
+                                <if test="condition.platform != null and condition.platform != ''">
+                                    and (t2.platform = #{condition.platform} or t2.platform = '')
+                                </if>
+                            </when>
+                            <when test="condition.old == 1">
+                                <choose>
+                                    <when test="condition.platform != null and condition.platform != ''">
+                                        and t2.platform = #{condition.platform}
+                                    </when>
+                                    <otherwise>
+                                        and t2.platform != ''
+                                    </otherwise>
+                                </choose>
+                            </when>
+                        </choose>
+                        and t2.deleted = 0
+                    </where>
+                )
+            </if>
+        </where>
+        order by t.id desc
+    </select>
+
+    <update id="removePageSchema">
+        UPDATE `w_cms_page_schema`
+        <set>
+            deleted = 1,
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="getDetailById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDetailDO">
+        select
+        t.id,
+        t.page_code,
+        t.page_name,
+        t.operator_id,
+        t.status,
+        t.create_time,
+        t.update_time,
+        t.put_versions,
+        t.tag_id,
+        t.extra,
+        t.page_code
+        from w_cms_page_schema t
+        <where>
+            t.deleted = 0
+            and t.id = #{id}
+        </where>
+        limit 1
+    </select>
+
+    <select id="selectSchemaIdByCode" resultType="java.lang.Long">
+
+        SELECT  ifnull(id,0)
+        FROM `w_cms_page_schema`
+        <where>
+            page_code = #{schemaCode}
+            and deleted = 0
+        </where>
+
+    </select>
+
+
+</mapper>
+

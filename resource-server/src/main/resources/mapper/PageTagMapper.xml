@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.PageTagMapper">
+
+    <insert id="insert" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.PageTagDO">
+        insert into w_page_tag(name, platform, operator_id, create_time, update_time)
+        values(#{name}, #{platform}, #{operatorId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <delete id="deleteById">
+        delete from w_page_tag where id = #{id}
+    </delete>
+
+    <update id="updateById" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.PageTagDO">
+        update w_page_tag
+        set
+        update_time = #{updateTime}
+        ,operator_id = #{operatorId}
+        <if test="name != null and name != ''">
+        ,name = #{name}
+        </if>
+        <if test="platform != null">
+        ,platform = #{platform}
+        </if>
+        <if test="pageCode != null">
+            ,page_code = #{pageCode}
+        </if>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="list" parameterType="com.idanchuang.cms.server.domainNew.model.cms.clientPage.ClientPageQueryForm"
+        resultType="com.idanchuang.cms.server.infrastructure.persistence.model.PageTagDO">
+        select id, name, platform, operator_id, create_time, update_time
+        from w_page_tag
+        <where>
+            <if test="idList != null">
+                <foreach collection="idList" item="id" open="id in (" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="platform != null">
+                and platform = #{platform}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <update id="updatePlatform">
+        update w_page_tag set operator_id = operator_id - 1 where id = #{id} and operator_id >= 0;
+    </update>
+
+    <select id="selectById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.PageTagDO">
+        select id, name, platform, operator_id, create_time, update_time
+        from w_page_tag where id = #{id}
+    </select>
+</mapper>

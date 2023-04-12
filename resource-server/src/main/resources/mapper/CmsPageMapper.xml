@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.CmsPageMapper">
+
+    <sql id="Base_Column_List">
+    id,page_schema_id,page_name,page_type,back_end_title,tag_id,status,share_flag,share_json,
+    start_time,end_time,goods_enable,operator_id,create_time,update_time,deleted,version
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        INSERT INTO `w_cms_page`
+        (page_schema_id,page_name,page_type,back_end_title,tag_id,status,share_flag,share_json,
+        start_time,end_time,goods_enable,operator_id,deleted)
+        VALUES
+        (#{pageSchemaId},#{pageName},#{pageType},#{backEndTitle},#{tagId},#{status},#{shareFlag},#{shareJson},
+        #{startTime},#{endTime},#{goodsEnable},#{operatorId},#{deleted});
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into
+        w_cms_page(id,page_schema_id,page_name,page_type,back_end_title,tag_id,status,sort,share_flag,share_json,
+        start_time,end_time,goods_enable,operator_id)
+        values
+        <foreach collection ="pageDOS" item="pageDO" separator=",">
+            (#{pageDO.id},#{pageDO.pageSchemaId},#{pageDO.pageName},#{pageDO.pageType},#{pageDO.backEndTitle},#{pageDO.tagId},#{pageDO.status},#{pageDO.sort},#{pageDO.shareFlag},#{pageDO.shareJson},
+            #{pageDO.startTime},#{pageDO.endTime},#{pageDO.goodsEnable},#{pageDO.operatorId})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        UPDATE `w_cms_page`
+        <set>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="status != null">status = #{status}, </if>
+            <if test="pageSchemaId != null">page_schema_id = #{pageSchemaId},</if>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="backEndTitle != null">back_end_title = #{backEndTitle},</if>
+            <if test="tagId != null">tag_id = #{tagId},</if>
+            <if test="platform != null">platform = #{platform},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="shareFlag != null">share_flag = #{shareFlag},</if>
+            <if test="shareJson != null">share_json = #{shareJson},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            end_time = #{endTime},
+            <if test="goodsEnable != null">goods_enable = #{goodsEnable},</if>
+            operator_id =#{operatorId},
+            version = version + 1,
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="selectByIdAndDelete" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            id = #{id}
+        </where>
+    </select>
+
+    <select id="selectById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            id = #{id}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="selectByIdIncludeDeleted" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            id = #{id}
+        </where>
+    </select>
+
+    <select id="selectByIds" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="it" open="id in (" separator="," close=")">
+                #{it}
+            </foreach>
+            and deleted = 0
+        </where>
+    </select>
+
+    <update id="removeCmsPage">
+        UPDATE `w_cms_page`
+        <set>
+            deleted = 1,
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="getCmsPageList" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            page_schema_id = #{pageSchemaId}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getCmsPageCount" resultType="java.lang.Integer">
+        SELECT  count(*)
+        FROM `w_cms_page`
+        <where>
+            page_schema_id = #{pageSchemaId}
+            and deleted = 0
+        </where>
+    </select>
+
+
+    <select id="getCmsPageListBatch" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="id" open="page_schema_id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getCmsPageListForValid" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="id" open="page_schema_id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and (start_time is null or start_time &lt;= now())
+            and (end_time is null or end_time > now())
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getCmsPageListForActive" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="id" open="page_schema_id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and (end_time is null or end_time > now())
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getPageTemplateList" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <if test="id != null and id != 0">
+                and id = #{id}
+            </if>
+            <if test="pageId != null and pageId != 0">
+                and page_schema_id = #{pageId}
+            </if>
+            <if test="title != null and title != ''">
+                and back_end_title like CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null">
+                <if test="status == 0">
+                    and start_time <![CDATA[ > ]]> now()
+                </if>
+                <if test="status == 1">
+                    and ((end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()) or
+                    (start_time <![CDATA[ <= ]]> now() and end_time is null))
+                </if>
+                <if test="status == 2">
+                    and end_time <![CDATA[ < ]]> now()
+                </if>
+            </if>
+            and deleted = 0
+        </where>
+        order by id desc
+    </select>
+
+    <select id="getPageListForEnable" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            goods_enable = 1
+            and tag_id = #{tagId}
+            and end_time <![CDATA[ <= ]]> #{enableTime}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getPageListForValid"  resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <if test="tagIdList != null">
+                <foreach collection="tagIdList" item="tagId" open="tag_id in (" separator="," close=")">
+                    #{tagId}
+                </foreach>
+            </if>
+            and (end_time is null || end_time >= #{endTime})
+            and deleted = 0
+        </where>
+    </select>
+
+    <update id="updateGoodsEnable">
+        update w_cms_page
+           set goods_enable = #{enable}
+         where id = #{id}
+    </update>
+
+    <select id="queryActivityPageIds" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        select id,page_schema_id,start_time,end_time from w_cms_page
+        where deleted = 0 and status = 1 and platform = 'VTN'
+        and end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()
+        order by start_time desc
+    </select>
+
+    <select id="queryActivityPageBySpuId" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        select id,page_schema_id,start_time,end_time from w_cms_page
+        where deleted = 0 and status = 1
+        and end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()
+        and id in (SELECT page_id FROM w_cms_page_container where deleted = 0 and id in (SELECT container_id FROM w_cms_container_component
+        WHERE deleted = 0 and model_type = 1 AND json_contains(biz_json,JSON_OBJECT('goodsId', #{spuId})) ))
+        order by start_time desc
+    </select>
+
+    <update id="updateStartTimeById">
+        update w_cms_page
+        set start_time = #{startTime},
+            update_time = now(),
+            operator_id = #{operateId}
+        where id = #{id} and deleted = 0
+    </update>
+
+    <select id="queryActivityPageByPageIds" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.CmsPageDO">
+        select id,page_schema_id,start_time,end_time
+        from w_cms_page
+        where deleted = 0 and status = 1 and platform = 'VTN'
+        and end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()
+        and id in
+        <foreach collection="pageIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="queryRecentlyCreationPageIdBy" resultType="java.lang.Integer">
+        select id
+        from w_cms_page
+        where deleted = 0 and status = 1 and page_schema_id = #{pageSchemaId}
+        order by create_time desc
+        limit 1
+    </select>
+
+    <update id="updatePageSnapRoot">
+        UPDATE `w_cms_page`
+        <set>
+            <if test="snapRoot != null">snap_root = #{snapRoot}</if>
+        </set>
+        <where>
+            <foreach collection="ids" item="id" open="id in (" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+</mapper>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.resource.server.infrastructure.persistence.abmau.mapper.DemoMapper">
+
+    <select id="queryBySubjectId" resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ArticleSubjectDO">
+        SELECT id,date_format(publish_at,'%M,%d,%Y') as publish_at,image,like_count,win_title,content,title,sub_title
+        FROM `w_article_subject`
+        WHERE id = #{id}
+    </select>
+
+</mapper>

@@ -1,0 +1,4 @@
+include:
+- project: "ops/cicd"
+  ref: master
+  file: /templates/Maven.gitlab-ci.yml

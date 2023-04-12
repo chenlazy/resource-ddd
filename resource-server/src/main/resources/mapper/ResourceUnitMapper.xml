@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.resource.server.infrastructure.persistence.mapper.ResourceUnitMapper">
+
+    <sql id="Base_Column_List">
+    id,is_deleted,create_time,update_time,operator_id,operator_user,active_status,resource_id,
+    platform_from,weight,content_title,component_json_data,start_time,end_time,create_user_id,create_user,unit_strategy,component_name
+    </sql>
+
+
+    <select id="queryResourceUnitDOListByResourceId"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceUnitDO">
+        select
+        <include refid="Base_Column_List"/>
+        from resource_unit
+        where resource_id = #{resourceId} and is_deleted = 0 and active_status = 1
+        and start_time <![CDATA[ <= ]]> #{nowTime}
+        and end_time <![CDATA[ >= ]]> #{nowTime}
+        and platform_from LIKE #{platform}
+        order by weight desc,create_time desc
+    </select>
+
+    <select id="getUnitIdByUnitNameLimitOne" resultType="java.lang.Long">
+        select id
+        from resource_unit
+        where is_deleted = 0 and content_title like #{unitName}
+        order by weight,create_time desc
+        limit 1
+    </select>
+
+    <select id="getUnitInfoById" resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceUnitDO">
+        select
+        <include refid="Base_Column_List"></include>
+        from resource_unit
+        where id = #{unitId} and is_deleted = 0
+    </select>
+
+    <insert id="insert">
+        INSERT INTO `resource_unit`
+        (resource_id,platform_from,weight,content_title,component_name,
+         start_time,end_time,component_json_data,operator_id,operator_user,create_user_id,create_user,unit_strategy,create_time,update_time)
+        VALUES
+        (#{resourceId},#{platformFrom},#{weight},#{contentTitle},#{componentName},
+         #{startTime},#{endTime},
+         #{componentJsonData},#{operatorId},#{operatorUser},#{createUserId},#{createUser},#{unitStrategy},#{createTime},#{updateTime});
+    </insert>
+
+    <update id="updateById">
+        UPDATE `resource_unit`
+        <set>
+            <if test="resourceId != null">resource_id = #{resourceId},</if>
+            <if test="platformFrom != null">platform_from = #{platformFrom},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="unitStrategy != null and unitStrategy !='' and unitStrategy !='null'">unit_strategy = #{unitStrategy},</if>
+            <if test="contentTitle != null">content_title = #{contentTitle},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="componentJsonData != null">component_json_data = #{componentJsonData},</if>
+            <if test="activeStatus != null">active_status = #{activeStatus},</if>
+            <if test="componentName != null">component_name = #{componentName},</if>
+            operator_user=#{operatorUser},
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="searchResourceUnit"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceUnitDO">
+        SELECT
+        ru.id,ru.operator_id,ru.active_status,ru.resource_id,ru.operator_user,ru.create_user,
+        ru.platform_from,ru.weight,ru.content_title,ru.component_json_data,ru.start_time,ru.end_time,ru.unit_strategy
+        FROM `resource_unit` ru
+        LEFT JOIN `resource_config` rc ON ru.resource_id = rc.id
+        <where>
+            <if test="pageCode != null">AND rc.page_code = #{pageCode}</if>
+            <if test="resourceName != null">AND rc.resource_name LIKE "%"#{resourceName}"%"</if>
+            <if test="resourceId != null">AND ru.resource_id = #{resourceId}</if>
+            <if test="startTime != null and endTime != null" >
+            AND (ru.start_time BETWEEN #{startTime} AND #{endTime}
+            <!--       OR ru.end_time BETWEEN #{startTime} AND #{endTime} -->
+                )</if>
+            <if test="activeStatus != null">AND ru.active_status = #{activeStatus}</if>
+            <if test="workStatus != null and workStatus == 0">AND ru.start_time  > #{queryDateTime}</if>
+            <if test="workStatus != null and workStatus == 1">AND #{queryDateTime} BETWEEN ru.start_time  AND ru.end_time</if>
+            <if test="workStatus != null and workStatus == 2">AND #{queryDateTime} > ru.end_time</if>
+            <if test="contentTitle != null">AND ru.content_title LIKE "%"#{contentTitle}"%"</if>
+            <if test="operatorUser != null">AND ru.operator_user = #{operatorUser}</if>
+            <if test="createUser != null">AND ru.create_user = #{createUser}</if>
+        </where>
+        ORDER BY ru.id DESC
+    </select>
+</mapper>

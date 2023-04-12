@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.mapper.MasterplateMapper">
+
+    <sql id="Base_Column_List">
+    id,page_schema_id,page_name,page_type,back_end_title,tag_id,version,status,share_flag,share_json,
+    start_time,page_style,end_time,goods_enable,operator_id,snap_root,create_time,update_time,deleted,create_id,extra
+    </sql>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        INSERT INTO `w_cms_page`
+        (page_schema_id,page_name,page_type,back_end_title,tag_id,version,status,share_flag,share_json,
+         start_time,page_style,end_time,goods_enable,operator_id,snap_root,deleted,create_id,extra)
+        VALUES
+            (#{pageSchemaId},#{pageName},#{pageType},#{backEndTitle},#{tagId},#{version},#{status},#{shareFlag},#{shareJson},
+             #{startTime},#{pageStyle},#{endTime},#{goodsEnable},#{operatorId},#{snapRoot},0,#{createId},#{extra});
+    </insert>
+
+
+    <select id="getMasterplateList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <if test="id != null and id != 0">
+                and id = #{id}
+            </if>
+            <if test="pageId != null and pageId != 0">
+                and page_schema_id = #{pageId}
+            </if>
+            <if test="title != null and title != ''">
+                and back_end_title like CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null">
+                <if test="status.val == 0">
+                    and start_time <![CDATA[ > ]]> now()
+                </if>
+                <if test="status.val == 1">
+                    and ((end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()) or
+                    (start_time <![CDATA[ <= ]]> now() and end_time is null))
+                </if>
+                <if test="status.val == 2">
+                    and end_time <![CDATA[ < ]]> now()
+                </if>
+            </if>
+            and deleted = 0
+            and snap_root = 0
+        </where>
+        order by id desc
+    </select>
+
+
+    <select id="getMasterplateById"
+            resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            id = #{id}
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="selectMasterplateByIds" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="masterplateIds" item="id" open="id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and deleted = 0
+        </where>
+    </select>
+
+    <select id="getMasterplatesByCatalogueId" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            page_schema_id = #{catalogueId}
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="getMasterplatesForActive" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            page_schema_id = #{catalogueId}
+            and (end_time is null or end_time > now())
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="getMasterplateListForValid" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            (end_time is null or end_time > now())
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="getBatchMasterplateList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="catalogueList" item="catalogueId" open="page_schema_id in (" separator="," close=")">
+                #{catalogueId}
+            </foreach>
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="countByCatalogueId" resultType="java.lang.Integer">
+
+        SELECT  count(*)
+        FROM `w_cms_page`
+        <where>
+            page_schema_id = #{catalogueId}
+            and deleted = 0
+            and snap_root = 0
+        </where>
+
+
+    </select>
+
+
+    <update id="remove">
+
+        UPDATE `w_cms_page`
+        <set>
+            deleted = 1,
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{masterplateId}
+        </where>
+
+    </update>
+
+
+    <update id="updateStartTimeById">
+
+        update w_cms_page
+        set start_time = #{startTime},
+            update_time = now(),
+            operator_id = #{operateId}
+        where id = #{masterplateId} and deleted = 0
+
+    </update>
+
+    <update id="updateById" parameterType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+
+        UPDATE `w_cms_page`
+        <set>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="status != null">status = #{status}, </if>
+            <if test="pageSchemaId != null">page_schema_id = #{pageSchemaId},</if>
+            <if test="pageType != null">page_type = #{pageType},</if>
+            <if test="backEndTitle != null">back_end_title = #{backEndTitle},</if>
+            <if test="tagId != null">tag_id = #{tagId},</if>
+            <if test="shareFlag != null">share_flag = #{shareFlag},</if>
+            <if test="shareJson != null">share_json = #{shareJson},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="pageStyle != null">page_style = #{pageStyle},</if>
+            end_time = #{endTime},
+            <if test="goodsEnable != null">goods_enable = #{goodsEnable},</if>
+            <if test="snapRoot != null">snap_root = #{snapRoot},</if>
+            <if test="extra != null">extra = #{extra},</if>
+            operator_id =#{operatorId},
+            version = version + 1
+        </set>
+        <where>
+            id = #{id}
+        </where>
+
+    </update>
+
+    <update id="updateGoodsEnable">
+        UPDATE `w_cms_page`
+        <set>
+            goods_enable = #{enable}
+        </set>
+        <where>
+            id = #{masterplateId}
+        </where>
+    </update>
+
+    <select id="getCmsPageListForValid" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="id" open="page_schema_id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and (start_time is null or start_time &lt;= now())
+            and (end_time is null or end_time > now())
+            and deleted = 0
+            and snap_root = 0
+        </where>
+    </select>
+
+    <select id="getCmsPageListForActive" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            <foreach collection="list" item="id" open="page_schema_id in (" separator="," close=")">
+                #{id}
+            </foreach>
+            and (end_time is null or end_time > now())
+            and deleted = 0
+            and snap_root = 0
+            order by id desc
+        </where>
+    </select>
+
+    <select id="getMasterplateSnapList" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_cms_page`
+        <where>
+            and deleted = 0
+            and snap_root = #{masterplateId}
+            order by id desc
+        </where>
+    </select>
+
+    <select id="queryActivityPageBySpuId" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.MasterplateDO">
+        select id,page_schema_id,start_time,end_time from w_cms_page
+        where deleted = 0 and status = 1 and snap_root = 0 and end_time <![CDATA[ >= ]]> now() and start_time <![CDATA[ <= ]]> now()
+        and id in (SELECT page_id FROM w_cms_page_container where deleted = 0 and id in (SELECT container_id FROM w_cms_container_component
+        WHERE deleted = 0 and model_type = 1 and snap_root = 0 AND json_contains(biz_json,JSON_OBJECT('goodsId', #{spuId})) ))
+        order by start_time desc
+    </select>
+
+</mapper>

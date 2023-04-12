@@ -1,0 +1,68 @@
+{
+  "config": {
+    "wide_screen_mode": true
+  },
+  "elements": [
+    {
+      "fields": [
+        {
+          "is_short": true,
+          "text": {
+            "content": "**时间**\n${noticeTime}",
+            "tag": "lark_md"
+          }
+        }
+      ],
+      "tag": "div"
+    },
+    {
+      "tag": "div",
+      "text": {
+        "content": "经过系统排查发现以下页面的模版存在时间间隔或核心页面未存在生效中的模版，请排查配置是否正常。\n页面ID为：${pageIdInfo}。\n\n请相关页面负责人前往管理后台进行再次配置确认${userInfo}。",
+        "tag": "lark_md"
+      }
+    },
+    {
+      "actions": [
+        {
+          "tag": "button",
+          "text": {
+            "content": "ABM页面搭建后台",
+            "tag": "plain_text"
+          },
+          "type": "primary",
+          "url": "https://abm-admin.danchuangglobal.com/#/activity/activity/special"
+        },
+        {
+          "tag": "button",
+          "text": {
+            "content": "VTN页面搭建后台",
+            "tag": "plain_text"
+          },
+          "type": "primary",
+          "url": "https://gams.danchuangglobal.com/#/operations/Operation/SpecialToolList"
+        }
+      ],
+      "tag": "action"
+    },
+    {
+      "tag": "hr"
+    },
+    {
+      "elements": [
+        {
+          "content": "来自紧急通知",
+          "tag": "lark_md"
+        }
+      ],
+      "tag": "note"
+    }
+  ],
+  "header": {
+    "template": "red",
+    "title": {
+      "content": "【模版配置】页面存在空模版通知",
+      "tag": "plain_text"
+    }
+  }
+}

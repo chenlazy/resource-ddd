@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.resource.server.infrastructure.persistence.mapper.ResourcePageMapper">
+
+    <select id="getResourcePageByBusinessId"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourcePageDO">
+        SELECT id,page_name,page_code,business_id
+        FROM `resource_page`
+        WHERE business_id = #{businessId} and is_deleted = 0
+    </select>
+
+    <select id="getResourcePageByPageCode"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourcePageDO">
+        SELECT id,page_name,page_code,business_id
+        FROM `resource_page`
+        WHERE page_code = #{pageCode}
+    </select>
+
+</mapper>

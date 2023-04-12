@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.ContainerComponentMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        insert into w_cms_container_component(container_id, component_type, model_type, biz_json, model_json, operator_id, create_time, update_time)
+        values(#{containerId}, #{componentType}, #{modelType}, #{bizJson}, #{modelJson}, #{operatorId})
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into w_cms_container_component(id, container_id, component_type, model_type, biz_json, model_json, operator_id)
+        values
+        <foreach collection ="list" item="r" separator=",">
+            (#{r.id,jdbcType=INTEGER}, #{r.containerId}, #{r.componentType}, #{r.modelType}, #{r.bizJson},
+            #{r.modelJson}, #{r.operatorId})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        update w_cms_container_component
+        set update_time = #{updateTime}, operator_id = #{operatorId}
+        <if test="containerId != null">
+            ,container_id = #{containerId}
+        </if>
+        <if test="componentType != null">
+            ,component_type = #{componentType}
+        </if>
+        <if test="modelJson != null and modelJson != ''">
+            ,model_json = #{modelJson}
+        </if>
+        <if test="pageCode != null and pageCode != ''">
+            ,page_code = #{pageCode}
+        </if>
+        <if test="pageId > 0">
+            ,page_id = #{pageId}
+        </if>
+        <where>
+            id = #{id} and deleted = 0
+        </where>
+    </update>
+
+    <select id="selectById" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        select
+        id, container_id, component_type, model_type, biz_json, model_json, operator_id, create_time, update_time
+        from w_cms_container_component
+        <where>
+            id = #{id} and deleted = 0
+        </where>
+    </select>
+
+    <select id="selectByCondition" parameterType="com.idanchuang.cms.server.domain.model.cms.ContainerComponentCondition"
+            resultType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        select
+        id, container_id, component_type, model_type, biz_json, model_json, operator_id, create_time, update_time
+        from w_cms_container_component
+        <where>
+            <if test="containerIdList != null">
+                <foreach collection="containerIdList" item="containerId" open="container_id in (" separator="," close=")">
+                    #{containerId}
+                </foreach>
+            </if>
+            <if test="modelType != null">
+                and model_type = #{modelType}
+            </if>
+            and deleted = 0
+        </where>
+    </select>
+
+    <update id="updateContainerId">
+        update w_cms_container_component
+        set update_time = #{updateTime}, operator_id = #{operatorId}, container_id = #{containerId}
+        <where>
+            <foreach collection="idList" item="id" separator="," open="id in (" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="queryComponentInfoByContainerIds" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        select id,container_id,biz_json from w_cms_container_component
+        where deleted = 0 and model_type = 1
+        and container_id in
+        <foreach collection="containerIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <update id="updateComponentPage">
+        UPDATE `w_cms_container_component`
+        <set>
+            <if test="snapRoot != null">snap_root = #{snapRoot}</if>
+        </set>
+        <where>
+            <foreach collection="ids" item="id" open="id in (" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="selectByActivityId" resultType="com.idanchuang.cms.server.infrastructure.persistence.model.ContainerComponentDO">
+        select id,page_id,container_id,biz_json from w_cms_container_component
+        where deleted = 0 and snap_root = 0
+        and case when json_valid(biz_json) then biz_json->'$[0].activityId' = #{activityId} end
+    </select>
+
+</mapper>

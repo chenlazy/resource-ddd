@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.abmau.mapper.UserRemindMapper">
+
+    <sql id="Base_Column_List">
+    id,union_id,remind_id,component_id,user_id,msg_title,msg_content,target,remind_send_time,
+    remind_status,remind_type,created_at,updated_at
+    </sql>
+
+    <select id="getRemindRecordCount" resultType="java.lang.Integer">
+        SELECT  count(*)
+        FROM `w_user_remind_record`
+        <where>
+            <if test="remindTypes != null">
+                <foreach collection="remindTypes" item="remindType" open="remind_type in (" separator="," close=")">
+                    #{remindType}
+                </foreach>
+            </if>
+            <if test="remindStatus != null">
+                and remind_status = #{remindStatus}
+            </if>
+            <if test="remindSendTime != null">
+                and remind_send_time  <![CDATA[ <= ]]> #{remindSendTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="listRemindRecords" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.abmau.UserRemindRecordDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_user_remind_record`
+        <where>
+            <if test="remindTypes != null">
+                <foreach collection="remindTypes" item="remindType" open="remind_type in (" separator="," close=")">
+                    #{remindType}
+                </foreach>
+            </if>
+            <if test="remindStatus != null">
+                and remind_status = #{remindStatus}
+            </if>
+            <if test="remindSendTime != null">
+                and remind_send_time  <![CDATA[ <= ]]> #{remindSendTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="listNearRemindRecords" resultType="com.idanchuang.cms.server.infrastructureNew.persistence.mybatis.dataobject.abmau.UserRemindRecordDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `w_user_remind_record`
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+
+            <if test="componentId != null">
+                and component_id = #{componentId}
+            </if>
+
+            <if test="remindType != null">
+                and remind_type = #{remindType}
+            </if>
+
+            <if test="remindStatus != null">
+                and remind_status = #{remindStatus}
+            </if>
+
+            <if test="remindTime != null">
+                and remind_send_time  <![CDATA[ <= ]]> #{remindTime}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateRemindRecordStatus">
+        UPDATE `w_user_remind_record`
+        <set>
+            remind_status = #{status},
+            updated_at = now()
+        </set>
+        <where>
+            <foreach collection="remindIds" item="remindId" open="id in (" separator="," close=")">
+                #{remindId}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

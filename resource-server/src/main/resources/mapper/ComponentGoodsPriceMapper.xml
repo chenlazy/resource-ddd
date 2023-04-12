@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idanchuang.cms.server.infrastructure.persistence.mapper.ComponentGoodsPriceMapper">
+    <insert id="insert"
+            parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.ComponentGoodsPriceDO">
+        insert into w_component_goods_price(component_id, component_goods_id, type, price_data, operator_id)
+        values(#{componentId}, #{componentGoodsId}, #{type}, #{priceData}, #{operatorId})
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        insert into w_component_goods_price(component_id, component_goods_id, type, price_data, operator_id)
+        values
+        <foreach collection="list" item="r" separator=",">
+            (#{r.componentId}, #{r.componentGoodsId}, #{r.type}, #{r.priceData}, #{r.operatorId})
+        </foreach>
+    </insert>
+
+    <update id="deleteById">
+        update w_component_goods_price
+        set deleted = 1, operator_id = #{operatorId}, update_time = #{updateTime}
+        <where>
+            id = #{id} and deleted = 0
+        </where>
+    </update>
+
+    <update id="updateById"
+            parameterType="com.idanchuang.cms.server.infrastructure.persistence.model.ComponentGoodsPriceDO">
+        update w_component_goods_price
+        set operator_id = #{operatorId}, update_time = #{updateTime}
+        <if test="type != null">
+            ,type = #{type}
+        </if>
+        <if test="priceData != null and priceData != ''">
+            ,price_data = #{priceData}
+        </if>
+        <where>
+            id = #{id} and deleted = 0
+        </where>
+    </update>
+
+    <select id="selectByCondition"
+            parameterType="com.idanchuang.cms.server.domain.model.cms.ComponentGoodsPriceCondition"
+            resultType="com.idanchuang.cms.server.infrastructure.persistence.model.ComponentGoodsPriceDO">
+        select
+        id, component_id, component_goods_id, type, price_data, operator_id, create_time, update_time
+        from w_component_goods_price
+        <where>
+            <if test="goodsIdList != null">
+                <foreach collection="goodsIdList" item="goodsId" open="component_goods_id in (" separator="," close=")">
+                    #{goodsId}
+                </foreach>
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="componentId != null">
+                and component_id = #{componentId}
+            </if>
+            and deleted = 0
+        </where>
+    </select>
+</mapper>

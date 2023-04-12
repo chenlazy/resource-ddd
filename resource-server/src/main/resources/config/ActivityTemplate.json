@@ -1,0 +1,68 @@
+{
+  "config": {
+    "wide_screen_mode": true
+  },
+  "elements": [
+    {
+      "fields": [
+        {
+          "is_short": true,
+          "text": {
+            "content": "**时间**\n${noticeTime}",
+            "tag": "lark_md"
+          }
+        }
+      ],
+      "tag": "div"
+    },
+    {
+      "tag": "div",
+      "text": {
+        "content": "你关联的cms页面活动:${pageName}(页面id=${pageIdInfo},模版id=${templateId})与活动id=${activityId} 绑定的商品数据(skuid= ${noticeInfo})未匹配,请及时关注！！！！${userInfo}",
+        "tag": "lark_md"
+      }
+    },
+    {
+      "actions": [
+        {
+          "tag": "button",
+          "text": {
+            "content": "ABM页面搭建后台",
+            "tag": "plain_text"
+          },
+          "type": "primary",
+          "url": "https://abm-admin.danchuangglobal.com/#/activity/activity/special"
+        },
+        {
+          "tag": "button",
+          "text": {
+            "content": "VTN页面搭建后台",
+            "tag": "plain_text"
+          },
+          "type": "primary",
+          "url": "https://gams.danchuangglobal.com/#/operations/Operation/SpecialToolList"
+        }
+      ],
+      "tag": "action"
+    },
+    {
+      "tag": "hr"
+    },
+    {
+      "elements": [
+        {
+          "content": "来自紧急通知",
+          "tag": "lark_md"
+        }
+      ],
+      "tag": "note"
+    }
+  ],
+  "header": {
+    "template": "red",
+    "title": {
+      "content": "【活动变更】活动信息变更通知",
+      "tag": "plain_text"
+    }
+  }
+}

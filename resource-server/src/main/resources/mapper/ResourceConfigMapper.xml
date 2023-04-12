@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idanchuang.resource.server.infrastructure.persistence.mapper.ResourceConfigMapper">
+
+    <sql id="Base_Column_List">
+    id,resource_name,page_code,business_type,resource_type,
+    resource_scheme,component_confined,component_type,resource_status,operator_user,
+    operator_id,create_time,update_time,is_deleted,resource_numb,create_user,create_user_id
+    </sql>
+
+    <select id="getResourceConfigByReq"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        select
+        <include refid="Base_Column_List"/>
+        from resource_config
+        where
+        id = #{resourceId} and page_code = #{pageCode} and business_type = #{business}
+        and is_deleted = 0 and resource_status = 1
+        order by resource_numb ASC
+    </select>
+
+    <select id="getResourceListByPageId" resultType ="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        select id,resource_status,resource_numb
+        from resource_config
+        where page_code = #{pageCode} and business_type = #{business} and is_deleted = 0
+        order by resource_numb ASC
+    </select>
+
+    <select id="getResourceIdByNameLimitOne" resultType="java.lang.Long">
+        select id
+        from resource_config
+        where is_deleted = 0 and resource_name like #{resourceName}
+        order by resource_numb ASC
+        limit 1
+    </select>
+
+    <insert id="insert" parameterType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        INSERT INTO `resource_config`
+        (resource_name,page_code,business_type,resource_type,resource_scheme,component_confined,component_type,operator_user,operator_id,resource_numb,create_user,create_user_id,create_time,update_time)
+        VALUES
+        (#{resourceName},#{pageCode},#{businessType},#{resourceType},#{resourceScheme},#{componentConfined},#{componentType},#{operatorUser},#{operatorId},#{resourceNumb},#{createUser},#{createUserId},#{createTime},#{updateTime});
+    </insert>
+
+    <update id="updateById" parameterType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        UPDATE `resource_config`
+        <set>
+            <if test="resourceName != null">resource_name = #{resourceName},</if>
+            <if test="pageCode != null">page_code = #{pageCode},</if>
+            <if test="businessType != null">business_type = #{businessType},</if>
+            <if test="resourceType != null">resource_type = #{resourceType},</if>
+            <if test="resourceScheme != null">resource_scheme = #{resourceScheme},</if>
+            <if test="componentConfined != null">component_confined = #{componentConfined},</if>
+            <if test="componentType != null">component_type = #{componentType},</if>
+            <if test="resourceNumb != null">resource_numb = #{resourceNumb},</if>
+            <if test="resourceStatus != null">resource_status = #{resourceStatus},</if>
+            operator_user=#{operatorUser},
+            operator_id =#{operatorId},
+            update_time = now()
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="selectById"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        SELECT  <include refid="Base_Column_List"/>
+        FROM `resource_config`
+        <where>
+            id = #{resourceId}
+        </where>
+    </select>
+
+    <select id="searchResourceConfig"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        SELECT
+            id,resource_name,page_code,resource_status,operator_user,resource_numb,create_user,resource_type,resource_scheme
+        FROM
+            `resource_config`
+        <where>
+            <if test="resourceId != null">id = #{resourceId}</if>
+            <if test="pageCode != null">AND page_code = #{pageCode}</if>
+            <if test="resourceName != null">AND resource_name LIKE "%"#{resourceName}"%"</if>
+            <if test="resourceStatus != null">AND resource_status = #{resourceStatus}</if>
+            <if test="operatorUser != null">AND operator_user LIKE "%"#{operatorUser}"%"</if>
+            <if test="createUser != null">AND create_user LIKE "%"#{createUser}"%"</if>
+            <if test="resourceNumb != null">AND resource_numb = #{resourceNumb}</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="checkResourceNumbUniq"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `resource_config`
+        WHERE page_code = #{pageCode} AND resource_numb = #{resourceNumb}
+          <if test="resourceId != null">AND id != #{resourceId} </if>
+    </select>
+
+    <select id="checkResourceNameUniq"
+            resultType="com.idanchuang.resource.server.infrastructure.persistence.model.ResourceConfigDO">
+        SELECT <include refid="Base_Column_List"/>
+        FROM `resource_config`
+        WHERE page_code = #{pageCode} AND resource_name = #{resourceName}
+          <if test="resourceId != null">AND id != #{resourceId} </if>
+    </select>
+
+</mapper>

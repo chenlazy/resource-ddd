@@ -1,0 +1,16 @@
+app:
+  id: resource
+server:
+  port: 8080
+apollo:
+  #meta: http://apollo-configservice-dev.idanchuang.vpc/
+  meta: http://apollo-configservice-test.idanchuang.vpc/
+  bootstrap:
+    enabled: true
+    namespaces: application,springcloud,sentinel_dashboard,ribbon_resolve,error_code,xxl_job
+    eagerLoad:
+      enabled: true
+#Spring集成组件相关配置
+spring:
+  main:
+    allow-bean-definition-overriding: true
